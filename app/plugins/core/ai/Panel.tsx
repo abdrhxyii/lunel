@@ -1399,181 +1399,68 @@ function ConfigureSheet({
   radius: any;
   fonts: any;
 }) {
-  const [modalVisible, setModalVisible] = useState(false);
-  const backdropOpacity = useSharedValue(0);
-  const sheetTranslateY = useSharedValue(SCREEN_HEIGHT);
-
-  const hideModal = useCallback(() => setModalVisible(false), []);
-
-  useEffect(() => {
-    if (visible) {
-      setModalVisible(true);
-      backdropOpacity.value = 0;
-      sheetTranslateY.value = SCREEN_HEIGHT;
-      backdropOpacity.value = withTiming(1, {
-        duration: 220,
-        easing: Easing.out(Easing.cubic),
-      });
-      sheetTranslateY.value = withTiming(0, {
-        duration: 260,
-        easing: Easing.out(Easing.cubic),
-      });
-    } else {
-      backdropOpacity.value = withTiming(0, {
-        duration: 200,
-        easing: Easing.out(Easing.cubic),
-      });
-      sheetTranslateY.value = withTiming(
-        SCREEN_HEIGHT,
-        {
-          duration: 240,
-          easing: Easing.out(Easing.cubic),
-        },
-        (finished) => {
-          if (finished) runOnJS(hideModal)();
-        }
-      );
-    }
-  }, [visible, backdropOpacity, sheetTranslateY, hideModal]);
-
-  const backdropAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  }));
-  const sheetAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: sheetTranslateY.value }],
-  }));
-
-  if (!modalVisible) return null;
-
   return (
-    <Modal transparent animationType="none" visible onRequestClose={onClose}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
-        <Animated.View style={[styles.sheetBackdrop, backdropAnimatedStyle]} pointerEvents="box-none">
-          <Pressable style={{ flex: 1 }} onPress={onClose} />
-        </Animated.View>
-        <Animated.View
-            style={[
-              styles.sheetContainer,
-              {
-                backgroundColor: colors.bg.raised,
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                height: "42%",
-              },
-              sheetAnimatedStyle,
-            ]}
-        >
-          <View style={styles.sheetHeader}>
-            <Text style={{ flex: 1, color: colors.fg.default, fontSize: 18, fontFamily: fonts.sans.semibold }}>Configure</Text>
-            <TouchableOpacity
-              onPress={() => {
-                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                onClose();
-              }}
-              activeOpacity={0.7}
-              style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.bg.base, alignItems: "center", justifyContent: "center" }}
-            >
-              <X size={18} color={colors.fg.default} strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            style={{ flex: 1, marginBottom: 20 }}
-            contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 18, gap: 10 }}
-            keyboardDismissMode="on-drag"
-          >
-            {backend === "opencode" && modeOptions.length > 0 ? (
-              <View style={{ gap: 6 }}>
-                <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.semibold, paddingHorizontal: 2 }}>
-                  Mode
-                </Text>
-                {modeOptions.map((option) => {
-                  const selected = option.id === selectedModeId;
-                  return (
-                    <TouchableOpacity
-                      key={option.id}
-                      style={[
-                        styles.sheetRow,
-                        {
-                          backgroundColor: selected ? colors.bg.base : colors.bg.raised,
-                          borderRadius: 10,
-                        },
-                      ]}
-                      onPress={() => onSelectMode(option.id)}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          flex: 1,
-                          color: colors.fg.default,
-                          fontSize: 14,
-                          fontFamily: fonts.sans.medium,
-                        }}
-                      >
-                        {option.name}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            ) : null}
-
-            <View style={{ gap: 6 }}>
-              <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.semibold, paddingHorizontal: 2 }}>
-                Model
-              </Text>
-              {modelOptions.length > 0 ? modelOptions.map((option) => {
-                const selected = option.id === selectedModelId;
-                return (
-                  <TouchableOpacity
-                    key={option.id}
-                    style={[
-                      styles.sheetRow,
-                      {
-                        backgroundColor: selected ? colors.bg.base : colors.bg.raised,
-                        borderRadius: 10,
-                      },
-                    ]}
-                    onPress={() => onSelectModel(option.id)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      numberOfLines={1}
-                      style={{
-                        flex: 1,
-                        color: colors.fg.default,
-                        fontSize: 14,
-                        fontFamily: fonts.sans.medium,
-                      }}
-                    >
+    <InfoSheet visible={visible} onClose={onClose} title="Configure" description="Select mode and model">
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 48, gap: 12 }}
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}
+      >
+        {backend === "opencode" && modeOptions.length > 0 ? (
+          <View style={{ gap: 6 }}>
+            <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.semibold, paddingHorizontal: 2 }}>
+              Mode
+            </Text>
+            {modeOptions.map((option) => {
+              const selected = option.id === selectedModeId;
+              return (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[styles.sheetRow, { backgroundColor: selected ? colors.bg.raised : "transparent", borderRadius: 8 }]}
+                  onPress={() => onSelectMode(option.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text numberOfLines={1} style={{ color: colors.fg.default, fontSize: 14, fontFamily: fonts.sans.medium }}>
                       {option.name}
                     </Text>
-                  </TouchableOpacity>
-                );
-              }) : (
-                <View
-                  style={[
-                    styles.backendOption,
-                    {
-                      backgroundColor: colors.bg.base,
-                      borderRadius: 10,
-                      opacity: 0.7,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.regular }}>
-                    {backend === "codex" ? "Auto" : "No models available"}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ) : null}
+
+        <View style={{ gap: 6 }}>
+          <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.semibold, paddingHorizontal: 2 }}>
+            Model
+          </Text>
+          {modelOptions.length > 0 ? modelOptions.map((option) => {
+            const selected = option.id === selectedModelId;
+            return (
+              <TouchableOpacity
+                key={option.id}
+                style={[styles.sheetRow, { backgroundColor: selected ? colors.bg.raised : "transparent", borderRadius: 8 }]}
+                onPress={() => onSelectModel(option.id)}
+                activeOpacity={0.7}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text numberOfLines={1} style={{ color: colors.fg.default, fontSize: 14, fontFamily: fonts.sans.medium }}>
+                    {option.name}
                   </Text>
                 </View>
-              )}
+              </TouchableOpacity>
+            );
+          }) : (
+            <View style={[styles.backendOption, { backgroundColor: colors.bg.raised, borderRadius: 10, opacity: 0.7 }]}>
+              <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.regular }}>
+                {backend === "codex" ? "Auto" : "No models available"}
+              </Text>
             </View>
-          </ScrollView>
-        </Animated.View>
-      </View>
-      </GestureHandlerRootView>
-    </Modal>
+          )}
+        </View>
+      </ScrollView>
+    </InfoSheet>
   );
 }
 
@@ -1598,52 +1485,6 @@ function CodexPreferencesSheet({
   radius: any;
   fonts: any;
 }) {
-  const [modalVisible, setModalVisible] = useState(false);
-  const backdropOpacity = useSharedValue(0);
-  const sheetTranslateY = useSharedValue(SCREEN_HEIGHT);
-
-  const hideModal = useCallback(() => setModalVisible(false), []);
-
-  useEffect(() => {
-    if (visible) {
-      setModalVisible(true);
-      backdropOpacity.value = 0;
-      sheetTranslateY.value = SCREEN_HEIGHT;
-      backdropOpacity.value = withTiming(1, {
-        duration: 220,
-        easing: Easing.out(Easing.cubic),
-      });
-      sheetTranslateY.value = withTiming(0, {
-        duration: 260,
-        easing: Easing.out(Easing.cubic),
-      });
-    } else {
-      backdropOpacity.value = withTiming(0, {
-        duration: 200,
-        easing: Easing.out(Easing.cubic),
-      });
-      sheetTranslateY.value = withTiming(
-        SCREEN_HEIGHT,
-        {
-          duration: 240,
-          easing: Easing.out(Easing.cubic),
-        },
-        (finished) => {
-          if (finished) runOnJS(hideModal)();
-        }
-      );
-    }
-  }, [visible, backdropOpacity, sheetTranslateY, hideModal]);
-
-  const backdropAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  }));
-  const sheetAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: sheetTranslateY.value }],
-  }));
-
-  if (!modalVisible) return null;
-
   const reasoningOptions: Array<{ id: NonNullable<CodexPromptOptions["reasoningEffort"]>; label: string; description: string }> = [
     { id: "low", label: "Low", description: "Fastest responses with lighter reasoning." },
     { id: "medium", label: "Medium", description: "Balanced speed and reasoning depth." },
@@ -1656,111 +1497,65 @@ function CodexPreferencesSheet({
   ];
 
   return (
-    <Modal transparent animationType="none" visible onRequestClose={onClose}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={{ flex: 1 }}>
-          <Animated.View style={[styles.sheetBackdrop, backdropAnimatedStyle]} pointerEvents="box-none">
-            <Pressable style={{ flex: 1 }} onPress={onClose} />
-          </Animated.View>
-          <Animated.View
-            style={[
-              styles.sheetContainer,
-              {
-                backgroundColor: colors.bg.raised,
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                height: "52%",
-              },
-              sheetAnimatedStyle,
-            ]}
-          >
-            <View style={styles.sheetHeader}>
-              <Text style={{ flex: 1, color: colors.fg.default, fontSize: 18, fontFamily: fonts.sans.semibold }}>Codex Preferences</Text>
+    <InfoSheet visible={visible} onClose={onClose} title="Codex Preferences" description="Adjust reasoning and speed">
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 48, gap: 12 }}
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={{ gap: 6 }}>
+          <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.semibold, paddingHorizontal: 2 }}>
+            Reasoning
+          </Text>
+          {reasoningOptions.map((option) => {
+            const selected = option.id === selectedReasoningEffort;
+            return (
               <TouchableOpacity
-                onPress={() => {
-                  void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  onClose();
-                }}
+                key={option.id}
+                style={[styles.sheetRow, { backgroundColor: selected ? colors.bg.raised : "transparent", borderRadius: 8 }]}
+                onPress={() => onSelectReasoningEffort(option.id)}
                 activeOpacity={0.7}
-                style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.bg.base, alignItems: "center", justifyContent: "center" }}
               >
-                <X size={18} color={colors.fg.default} strokeWidth={2} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: colors.fg.default, fontSize: 14, fontFamily: fonts.sans.medium }}>
+                    {option.label}
+                  </Text>
+                  <Text style={{ color: colors.fg.muted, fontSize: 11, fontFamily: fonts.sans.regular, marginTop: 2 }}>
+                    {option.description}
+                  </Text>
+                </View>
               </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              style={{ flex: 1, marginBottom: 20 }}
-              contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 18, gap: 12 }}
-              keyboardDismissMode="on-drag"
-            >
-              <View style={{ gap: 6 }}>
-                <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.semibold, paddingHorizontal: 2 }}>
-                  Reasoning
-                </Text>
-                {reasoningOptions.map((option) => {
-                  const selected = option.id === selectedReasoningEffort;
-                  return (
-                    <TouchableOpacity
-                      key={option.id}
-                      style={[
-                        styles.sheetRow,
-                        {
-                          backgroundColor: selected ? colors.bg.base : colors.bg.raised,
-                          borderRadius: 10,
-                        },
-                      ]}
-                      onPress={() => onSelectReasoningEffort(option.id)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ color: colors.fg.default, fontSize: 14, fontFamily: fonts.sans.medium }}>
-                          {option.label}
-                        </Text>
-                        <Text style={{ color: colors.fg.muted, fontSize: 11, fontFamily: fonts.sans.regular, marginTop: 2 }}>
-                          {option.description}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              <View style={{ gap: 6 }}>
-                <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.semibold, paddingHorizontal: 2 }}>
-                  Speed
-                </Text>
-                {speedOptions.map((option) => {
-                  const selected = option.id === selectedSpeed;
-                  return (
-                    <TouchableOpacity
-                      key={option.id}
-                      style={[
-                        styles.sheetRow,
-                        {
-                          backgroundColor: selected ? colors.bg.base : colors.bg.raised,
-                          borderRadius: 10,
-                        },
-                      ]}
-                      onPress={() => onSelectSpeed(option.id)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ color: colors.fg.default, fontSize: 14, fontFamily: fonts.sans.medium }}>
-                          {option.label}
-                        </Text>
-                        <Text style={{ color: colors.fg.muted, fontSize: 11, fontFamily: fonts.sans.regular, marginTop: 2 }}>
-                          {option.description}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </ScrollView>
-          </Animated.View>
+            );
+          })}
         </View>
-      </GestureHandlerRootView>
-    </Modal>
+
+        <View style={{ gap: 6 }}>
+          <Text style={{ color: colors.fg.muted, fontSize: 12, fontFamily: fonts.sans.semibold, paddingHorizontal: 2 }}>
+            Speed
+          </Text>
+          {speedOptions.map((option) => {
+            const selected = option.id === selectedSpeed;
+            return (
+              <TouchableOpacity
+                key={option.id}
+                style={[styles.sheetRow, { backgroundColor: selected ? colors.bg.raised : "transparent", borderRadius: 8 }]}
+                onPress={() => onSelectSpeed(option.id)}
+                activeOpacity={0.7}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: colors.fg.default, fontSize: 14, fontFamily: fonts.sans.medium }}>
+                    {option.label}
+                  </Text>
+                  <Text style={{ color: colors.fg.muted, fontSize: 11, fontFamily: fonts.sans.regular, marginTop: 2 }}>
+                    {option.description}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </InfoSheet>
   );
 }
 
@@ -3631,9 +3426,9 @@ const selectedModelNameFull = modelOptions.find((m) => m.id === selectedModel)?.
               <View style={styles.composerBottomBar}>
                 <View pointerEvents={isVoiceMode ? "none" : "auto"} style={styles.composerRow}>
                   {/* Left group: attachment + model + codex prefs */}
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, overflow: "hidden" }}>
                     <TouchableOpacity
-                      style={[styles.actionButton, { borderRadius: 9999, overflow: "visible" }]}
+                      style={[styles.actionButton, { borderRadius: 9999, overflow: "visible", flexShrink: 0, flexGrow: 0 }]}
                       onPress={handleAttachment}
                       activeOpacity={0.7}
                       disabled={isVoiceBusy}
@@ -3642,7 +3437,7 @@ const selectedModelNameFull = modelOptions.find((m) => m.id === selectedModel)?.
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={[styles.modelButton, { borderColor: colors.border.secondary, maxWidth: 260 }]}
+                      style={[styles.modelButton, { borderColor: colors.border.secondary, flexShrink: 1, flexGrow: 0, minWidth: 40, maxWidth: 90 }]}
                       onPress={() => setActiveSheet("configure")}
                       activeOpacity={0.7}
                       disabled={activeBackend !== "codex" && agents.length === 0 && modelOptions.length === 0}
@@ -3658,7 +3453,7 @@ const selectedModelNameFull = modelOptions.find((m) => m.id === selectedModel)?.
 
                     {activeBackend === "codex" ? (
                       <TouchableOpacity
-                        style={[styles.modelButton, { borderColor: colors.border.secondary, maxWidth: 220 }]}
+                        style={[styles.modelButton, { borderColor: colors.border.secondary, flexShrink: 1, flexGrow: 0, minWidth: 40, maxWidth: 90 }]}
                         onPress={() => setActiveSheet("codex-preferences")}
                         activeOpacity={0.7}
                       >
@@ -3673,10 +3468,8 @@ const selectedModelNameFull = modelOptions.find((m) => m.id === selectedModel)?.
                     ) : null}
                   </View>
 
-                  <View style={{ flex: 1 }} />
-
-                  {/* Right group: mic + send */}
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  {/* Right group: mic + send — never pushed out */}
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0, flexGrow: 0 }}>
                     <TouchableOpacity
                       style={styles.actionButton}
                       onPress={enterVoiceMode}
@@ -4100,6 +3893,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    overflow: "hidden",
   },
   composerStatusText: {
     marginTop: 8,
@@ -4122,7 +3916,6 @@ const styles = StyleSheet.create({
   },
   modelButton: {
     minWidth: 52,
-    maxWidth: 220,
     paddingHorizontal: 10,
     paddingVertical: 6,
     flexDirection: "row",
@@ -4130,10 +3923,12 @@ const styles = StyleSheet.create({
     gap: 4,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 6,
+    overflow: "hidden",
   },
   modelText: {
     fontSize: 12,
     flexShrink: 1,
+    minWidth: 0,
   },
 
   // Action buttons
